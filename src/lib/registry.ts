@@ -47,7 +47,7 @@ export class Registry {
             var service: Service = this
             registry.probe(registry.server.mdns, this, (exists: any) => {
                 if(exists) {
-                    service.stop(service)
+                    service.stop()
                     console.log(new Error('Service name is already in use on the network'))
                     return
                 }
@@ -185,7 +185,9 @@ export class Registry {
             (services as Array<Service>).forEach(function (service) {
                 service.published = false
             })
-            if (callback) callback.apply(null, arguments)
+            if (typeof callback === "function") {
+                callback.apply(null, arguments)
+            }
         })
     }
 }
