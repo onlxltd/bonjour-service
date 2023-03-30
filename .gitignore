@@ -2,3 +2,9 @@ node_modules
 dist
 coverage
 .nyc_output
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
