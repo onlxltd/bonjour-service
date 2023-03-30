@@ -2,7 +2,7 @@ import { ServiceRecord }    from './service'
 import deepEqual            from 'fast-deep-equal/es6'
 
 import MulticastDNS         from 'multicast-dns'
-import dnsEqual             from 'dns-equal'
+import dnsEqual             from './utils/dns-equal'
 
 export class Server {
 

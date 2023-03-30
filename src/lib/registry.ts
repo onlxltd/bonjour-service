@@ -1,4 +1,4 @@
-import dnsEqual                                     from 'dns-equal'
+import dnsEqual                                     from './utils/dns-equal'
 import Server                                       from './mdns-server'
 import Service, { ServiceConfig, ServiceRecord }    from './service'
 

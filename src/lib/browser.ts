@@ -1,6 +1,6 @@
 import KeyValue                                                     from './KeyValue'
 import DnsTxt                                                       from './dns-txt'
-import dnsEqual                                                     from 'dns-equal'
+import dnsEqual                                                     from './utils/dns-equal'
 import { EventEmitter }                                             from 'events'
 import Service, { ServiceRecord }                                   from './service'
 import { toString as ServiceToString, toType as ServiceToType }     from './service-types'
