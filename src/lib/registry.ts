@@ -1,4 +1,3 @@
-import flatten                                      from 'array-flatten'
 import dnsEqual                                     from 'dns-equal'
 import Server                                       from './mdns-server'
 import Service, { ServiceConfig, ServiceRecord }    from './service'
@@ -167,14 +166,14 @@ export class Registry {
     
         services = services.filter((service: Service) =>  service.activated) // ignore services not currently starting or started
     
-        var records: any = flatten.depth(services.map(function (service) {
+        var records: any = services.flatMap(function (service) {
             service.activated = false
             var records = service.records()
             records.forEach((record: ServiceRecord) => {
                 record.ttl = 0 // prepare goodbye message
             })
             return records
-        }), 1)
+        })
     
         if (records.length === 0) return callback && callback()
         server.unregister(records)

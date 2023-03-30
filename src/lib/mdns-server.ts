@@ -1,4 +1,3 @@
-import flatten              from 'array-flatten'
 import { ServiceRecord }    from './service'
 import deepEqual            from 'fast-deep-equal/es6'
 
@@ -66,7 +65,7 @@ export class Server {
 
             // generate the answers section
             var answers = type === 'ANY'
-              ? flatten.depth(Object.keys(self.registry).map(self.recordsFor.bind(self, name)), 1)
+              ? Object.keys(self.registry).map(self.recordsFor.bind(self, name)).flat(1)
               : self.recordsFor(name, type)
 
             if (answers.length === 0) return
