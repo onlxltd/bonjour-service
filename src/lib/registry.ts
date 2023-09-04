@@ -52,9 +52,9 @@ export class Registry {
         }
         
         const service   = new Service(config)
-        service.start   = start.bind(null, service, this)
+        service.start   = start.bind(null, service, this, { probe: config.probe !== false })
         service.stop    = stop.bind(null, service, this)
-        service.start({ probe: config.probe !== false })
+        service.start()
         return service
     }
 
