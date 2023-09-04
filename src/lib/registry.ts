@@ -7,6 +7,7 @@ import Service, { ServiceConfig, ServiceRecord }    from './service'
 
 const REANNOUNCE_MAX_MS : number    = 60 * 60 * 1000
 const REANNOUNCE_FACTOR : number    = 3
+const noop = function () {}
 
 export class Registry {
 
@@ -42,9 +43,10 @@ export class Registry {
         }
         
         function stop(service: Service, registry: Registry, callback?: CallableFunction) {
-            if (!service.activated) return
+            if (!callback) callback = noop
+            if (!service.activated) return process.nextTick(callback)
         
-            if(!(service instanceof Service)) return
+            if(!(service instanceof Service)) return process.nextTick(callback)
             registry.teardown(registry.server, service, callback)
           
             const index = registry.services.indexOf(service)
