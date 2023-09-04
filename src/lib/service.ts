@@ -21,6 +21,7 @@ export interface ServiceConfig {
     txt?        : KeyValue
 
     probe?      : boolean
+    disableIpv6?: boolean
 }
 
 export interface ServiceRecord {
@@ -78,6 +79,7 @@ export class Service extends EventEmitter {
         this.fqdn       = `${this.name}.${this.type}${TLD}`
         this.txt        = config.txt
         this.subtypes   = config.subtypes
+        this.disableIpv6 = !!config.disableIpv6
     }
 
 
@@ -100,6 +102,7 @@ export class Service extends EventEmitter {
                         records.push(this.RecordA(this, addr.address))
                         break
                     case 'IPv6':
+                        if (this.disableIpv6) break
                         records.push(this.RecordAAAA(this, addr.address))
                         break
                 }
