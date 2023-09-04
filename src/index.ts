@@ -71,10 +71,11 @@ export class Bonjour {
 
     /**
      * Destroy the class
+     * @param callback Callback when underlying socket is closed
      */
-    public destroy() {
+    public destroy(callback?: CallableFunction) {
         this.registry.destroy()
-        this.server.mdns.destroy()
+        this.server.mdns.destroy(callback)
     }
 
 }
