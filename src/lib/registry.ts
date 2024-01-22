@@ -16,16 +16,19 @@ export class Registry {
     }
 
     public publish(config: ServiceConfig): Service {
+        const configProbe = config.probe !== false;
 
-        function start(service: Service, registry: Registry, opts?: { probe: boolean }) {
+        const service = new Service(config, start.bind(null, this), stop.bind(null, this))
+
+        function start(registry: Registry, { probe = configProbe }: { probe?: boolean } = {}) {
             if (service.activated) return
             service.activated = true
         
             registry.services.push(service)
         
             if(!(service instanceof Service)) return
-        
-            if(opts?.probe) {
+
+            if (probe) {
                 registry.probe(registry.server.mdns, service, (exists: boolean) => {
                     if(exists) {
                         if(service.stop !== undefined) service.stop()
@@ -38,8 +41,8 @@ export class Registry {
                 registry.announce(registry.server, service)
             }
         }
-        
-        function stop(service: Service, registry: Registry, callback?: CallableFunction) {
+
+        function stop(registry: Registry, callback?: CallableFunction) {
             if (!callback) callback = noop
             if (!service.activated) return process.nextTick(callback)
         
@@ -49,11 +52,9 @@ export class Registry {
             const index = registry.services.indexOf(service)
             if (index !== -1) registry.services.splice(index, 1)
         }
-        
-        const service   = new Service(config)
-        service.start   = start.bind(null, service, this)
-        service.stop    = stop.bind(null, service, this)
-        service.start({ probe: config.probe !== false })
+
+        service.start()
+
         return service
     }
 
