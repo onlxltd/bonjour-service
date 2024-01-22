@@ -58,12 +58,9 @@ export class Service extends EventEmitter {
     public activated   : boolean = false
     public destroyed    : boolean = false
 
-    public start?       : CallableFunction
-    public stop?        : CallableFunction
-
     private txtService  : DnsTxt
 
-    constructor(config: ServiceConfig) {
+    constructor(config: ServiceConfig, public start: CallableFunction, public stop: CallableFunction) {
         super()
 
         this.txtService = new DnsTxt()
