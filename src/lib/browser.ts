@@ -12,7 +12,7 @@ const TLD           = '.local'
 const WILDCARD      = '_services._dns-sd._udp' + TLD
 
 export interface BrowserConfig {
-    type        : string
+    type?        : string
     name?       : string
     protocol?   : 'tcp' | 'udp'
     subtypes?   : string[]
