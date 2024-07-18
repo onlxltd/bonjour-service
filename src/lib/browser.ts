@@ -133,6 +133,25 @@ export class Browser extends EventEmitter {
         this.mdns.query(this.name, 'PTR')
     }
 
+    public expire() {
+        const currentTime = Date.now()
+
+        this._services = this._services.filter((service) => {
+            // @ts-expect-error Types are wrong here
+            if (!service.ttl) return true // No expiry
+            
+            // @ts-expect-error Types are wrong here
+            const expireTime = service.lastSeen + service.ttl * 1000
+
+            if (expireTime < currentTime) {
+                this.emit('down', service)
+                return false
+            }
+
+            return true
+        })
+    }
+
     public get services() {
         return this._services;
     }
