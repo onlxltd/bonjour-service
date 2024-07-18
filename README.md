@@ -119,6 +119,10 @@ Emitted every time a new service is found that matches the browser.
 
 Emitted every time an existing service emmits a goodbye message.
 
+#### `Event: srv-update`
+
+Emitted every time an existing service does a new announcement with an updated SRV record.
+
 #### `Event: txt-update`
 
 Emitted every time an existing service does a new announcement with an updated TXT record.
