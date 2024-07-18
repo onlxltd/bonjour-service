@@ -21,6 +21,12 @@ export interface BrowserConfig {
 
 export type BrowserOnUp = (service: Service) => void
 
+export interface BrowserEvents {
+    up: [service: Service]
+    down: [service: Service]
+    'txt-update': [newService: Service]
+}
+
 /**
  * Start a browser
  *
@@ -36,7 +42,7 @@ export type BrowserOnUp = (service: Service) => void
  * with that service.
  */
 
-export class Browser extends EventEmitter {
+export class Browser extends EventEmitter<BrowserEvents> {
 
     private mdns        : any
     private onresponse  : CallableFunction | undefined  = undefined
