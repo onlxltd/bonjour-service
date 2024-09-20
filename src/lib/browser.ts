@@ -62,7 +62,7 @@ export class Browser extends EventEmitter {
             this.name       = WILDCARD
             this.wildcard   = true
         } else {
-            this.name = ServiceToString({ name: opts.type, protocol: opts.protocol || 'tcp'}) + TLD
+            this.name = ServiceToString({ name: opts.type, protocol: opts.protocol || 'udp'}) + TLD
             if (opts.name) this.name = opts.name + '.' + this.name
             this.wildcard = false
         }
