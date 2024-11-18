@@ -27,7 +27,7 @@ npm install bonjour-service
 ## Usage
 
 ```js
-import Bonjour from 'bonjour-service'
+import { Bonjour } from 'bonjour-service'
 
 const instance = new Bonjour()
 
