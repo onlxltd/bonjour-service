@@ -28,6 +28,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - run: corepack enable
     - run: yarn install
     - run: yarn build 
     - run: yarn test | npx tap-pessimist
