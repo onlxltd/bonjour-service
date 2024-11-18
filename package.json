@@ -1,6 +1,6 @@
 {
   "name": "bonjour-service",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A Bonjour/Zeroconf implementation in TypeScript",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,15 +9,15 @@
     "multicast-dns": "^7.2.5"
   },
   "devDependencies": {
-    "@types/node": "^16.18.11",
-    "@typescript-eslint/eslint-plugin": "^5.22.0",
-    "@typescript-eslint/parser": "^5.22.0",
+    "@types/node": "^22.9.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
     "after-all": "^2.0.2",
-    "eslint": "^8.15.0",
-    "standard": "^17.0.0",
-    "tape": "^5.2.2",
+    "eslint": "^8.57.1",
+    "standard": "^17.1.2",
+    "tape": "^5.9.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^4.4.4"
+    "typescript": "^5.6.3"
   },
   "scripts": {
     "test": "standard --fix && tape test/*.js",
@@ -42,10 +42,11 @@
     "broadcast",
     "dns-sd"
   ],
-  "author": "ON LX Lited <team@onlx.ltd> (https://labs.onlx.ltd)",
+  "author": "ON LX Lited <team@onlx.ltd> (https://onlx.ltd)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/onlxltd/bonjour-service/issues"
   },
-  "homepage": "https://github.com/onlxltd/bonjour-service"
+  "homepage": "https://github.com/onlxltd/bonjour-service",
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
