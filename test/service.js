@@ -81,7 +81,8 @@ test('_records() - minimal', function (t) {
   t.deepEqual(s.records(), [
     { data: s.fqdn, name: '_http._tcp.local', ttl: 28800, type: 'PTR' },
     { data: { port: 3000, target: os.hostname() }, name: s.fqdn, ttl: 120, type: 'SRV' },
-    { data: [], name: s.fqdn, ttl: 4500, type: 'TXT' }
+    { data: [], name: s.fqdn, ttl: 4500, type: 'TXT' },
+    { name: '_services._dns-sd._udp.local', type: 'PTR', ttl: 120, data: '_http._tcp.local' }
   ].concat(getAddressesRecords(s.host)))
   t.end()
 })
@@ -92,6 +93,7 @@ test('_records() - everything', function (t) {
     { data: s.fqdn, name: '_http._tcp.local', ttl: 28800, type: 'PTR' },
     { data: { port: 3000, target: 'example.com' }, name: s.fqdn, ttl: 120, type: 'SRV' },
     { data: [Buffer.from('666f6f3d626172', 'hex')], name: s.fqdn, ttl: 4500, type: 'TXT' },
+    { name: '_services._dns-sd._udp.local', type: 'PTR', ttl: 120, data: '_http._tcp.local' },
     { data: s.fqdn, name: '_foo._sub._http._tcp.local', ttl: 28800, type: 'PTR' },
     { data: s.fqdn, name: '_bar._sub._http._tcp.local', ttl: 28800, type: 'PTR' }
   ].concat(getAddressesRecords(s.host)))
