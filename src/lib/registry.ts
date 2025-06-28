@@ -17,7 +17,7 @@ export class Registry {
 
     public publish(config: ServiceConfig): Service {
 
-        function start(service: Service, registry: Registry, opts?: { probe: boolean }) {
+        async function start(service: Service, registry: Registry, opts?: { probe: boolean }) {
             if (service.activated) return
             service.activated = true
         
@@ -25,18 +25,33 @@ export class Registry {
         
             if(!(service instanceof Service)) return
         
-            if(opts?.probe) {
-                registry.probe(registry.server.mdns, service, (exists: boolean) => {
-                    if(exists) {
-                        if(service.stop !== undefined) service.stop()
-                        console.log(new Error('Service name is already in use on the network'))
-                        return
-                    }
-                    registry.announce(registry.server, service)
-                })
-            } else {
-                registry.announce(registry.server, service)
+            if(opts?.probe === false) {
+				registry.announce(registry.server, service)
+				return
+			}
+			
+			let conflicts = true
+			let attempt = 1
+			const name = service.name
+			const fqdnSuffix = service.fqdn.substring(name.length)
+			while (conflicts) {
+				conflicts = false
+                try {
+					await new Promise ((resolve, reject) => {
+						registry.probe(registry.server.mdns, service, (exists: boolean) => {
+							if(exists) reject(service.name)
+							else resolve(service.name)
+						})
+					})
+				} catch (e) {
+					++attempt
+					conflicts = true
+					service.name = name + ' (' + attempt + ')'
+					service.fqdn = service.name + fqdnSuffix
+				}
             }
+			
+			registry.announce(registry.server, service)
         }
         
         function stop(service: Service, registry: Registry, callback?: CallableFunction) {
