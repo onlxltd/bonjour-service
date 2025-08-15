@@ -108,7 +108,6 @@ export class Browser extends EventEmitter {
                 matches.forEach((service: Service) => {
                     const existingService = self._services.find((s) => dnsEqual(s.fqdn, service.fqdn))
                     if (existingService) {
-                        // @ts-expect-error Types are wrong here
                         existingService.lastSeen = service.lastSeen
                         self.updateService(existingService, service)
                         return
@@ -137,17 +136,12 @@ export class Browser extends EventEmitter {
         const currentTime = Date.now()
 
         this._services = this._services.filter((service) => {
-            // @ts-expect-error Types are wrong here
-            if (!service.ttl) return true // No expiry
-            
-            // @ts-expect-error Types are wrong here
+            if(!service.ttl || service.lastSeen === undefined) return true // No expiry
             const expireTime = service.lastSeen + service.ttl * 1000
-
-            if (expireTime < currentTime) {
+            if(expireTime < currentTime) {
                 this.emit('down', service)
                 return false
             }
-
             return true
         })
     }
