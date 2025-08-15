@@ -17,29 +17,32 @@ const getAddressesRecords = function (host) {
   return records
 }
 
+const start = () => {}
+const stop = () => {}
+
 test('service must throw an exception if no name is specified', function (t) {
   t.throws(function () {
-    new Service({ type: 'http', port: 3000 }) // eslint-disable-line no-new
+    new Service({ type: 'http', port: 3000 }, start, stop) // eslint-disable-line no-new
   }, 'Required name not given')
   t.end()
 })
 
 test('service must throw an exception if no type is specified', function (t) {
   t.throws(function () {
-    new Service({ name: 'Foo Bar', port: 3000 }) // eslint-disable-line no-new
+    new Service({ name: 'Foo Bar', port: 3000 }, start, stop) // eslint-disable-line no-new
   }, 'Required type not given')
   t.end()
 })
 
 test('no port', function (t) {
   t.throws(function () {
-    new Service({ name: 'Foo Bar', type: 'http' }) // eslint-disable-line no-new
+    new Service({ name: 'Foo Bar', type: 'http' }, start, stop) // eslint-disable-line no-new
   }, 'Required port not given')
   t.end()
 })
 
 test('minimal', function (t) {
-  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000 })
+  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000 }, start, stop)
   t.equal(s.name, 'Foo Bar')
   t.equal(s.protocol, 'tcp')
   t.equal(s.type, '_http._tcp')
@@ -49,35 +52,37 @@ test('minimal', function (t) {
   t.equal(s.txt, undefined)
   t.equal(s.subtypes, undefined)
   t.equal(s.published, false)
+  t.equal(s.start, start)
+  t.equal(s.stop, stop)
   t.end()
 })
 
 test('protocol', function (t) {
-  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, protocol: 'udp' })
+  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, protocol: 'udp' }, start, stop)
   t.deepEqual(s.protocol, 'udp')
   t.end()
 })
 
 test('host', function (t) {
-  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, host: 'example.com' })
+  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, host: 'example.com' }, start, stop)
   t.deepEqual(s.host, 'example.com')
   t.end()
 })
 
 test('txt', function (t) {
-  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, txt: { foo: 'bar' } })
+  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, txt: { foo: 'bar' } }, start, stop)
   t.deepEqual(s.txt, { foo: 'bar' })
   t.end()
 })
 
 test('subtypes', function (t) {
-  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, subtypes: ['foo', 'bar'] })
+  const s = new Service({ name: 'Foo Bar', type: 'http', port: 3000, subtypes: ['foo', 'bar'] }, start, stop)
   t.deepEqual(s.subtypes, ['foo', 'bar'])
   t.end()
 })
 
 test('_records() - minimal', function (t) {
-  const s = new Service({ name: 'Foo Bar', type: 'http', protocol: 'tcp', port: 3000 })
+  const s = new Service({ name: 'Foo Bar', type: 'http', protocol: 'tcp', port: 3000 }, start, stop)
   t.deepEqual(s.records(), [
     { data: s.fqdn, name: '_http._tcp.local', ttl: 28800, type: 'PTR' },
     { data: { port: 3000, target: os.hostname() }, name: s.fqdn, ttl: 120, type: 'SRV' },
@@ -87,7 +92,7 @@ test('_records() - minimal', function (t) {
 })
 
 test('_records() - everything', function (t) {
-  const s = new Service({ name: 'Foo Bar', type: 'http', protocol: 'tcp', port: 3000, host: 'example.com', txt: { foo: 'bar' }, subtypes: ['foo', 'bar'] })
+  const s = new Service({ name: 'Foo Bar', type: 'http', protocol: 'tcp', port: 3000, host: 'example.com', txt: { foo: 'bar' }, subtypes: ['foo', 'bar'] }, start, stop)
   t.deepEqual(s.records(), [
     { data: s.fqdn, name: '_http._tcp.local', ttl: 28800, type: 'PTR' },
     { data: { port: 3000, target: 'example.com' }, name: s.fqdn, ttl: 120, type: 'SRV' },
