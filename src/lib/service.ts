@@ -84,7 +84,12 @@ export class Service extends EventEmitter {
 
 
     public records(): Array<ServiceRecord> {
-        var records : Array<ServiceRecord>  = [this.RecordPTR(this), this.RecordSRV(this), this.RecordTXT(this)]
+        var records : Array<ServiceRecord>  = [
+            this.RecordPTR(this),
+            this.RecordSRV(this),
+            this.RecordTXT(this),
+            this.RecordServicePTR(this),
+        ]
 
         // Handle subtypes
         for (let subtype of this.subtypes || []) {
@@ -124,6 +129,20 @@ export class Service extends EventEmitter {
             type    : 'PTR',
             ttl     : 28800,
             data    : service.fqdn
+        }
+    }
+
+    /**
+     * Provide PTR record
+     * @param service
+     * @returns
+     */
+    private RecordServicePTR(service: Service): ServiceRecord {
+        return {
+            name    : `_services._dns-sd._udp${TLD}`,
+            type    : 'PTR',
+            ttl     : 120,
+            data    : `${service.type}${TLD}`
         }
     }
 
