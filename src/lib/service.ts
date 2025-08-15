@@ -51,6 +51,8 @@ export class Service extends EventEmitter {
     public addresses?   : Array<string>
     public referer?     : ServiceReferer
     public disableIPv6  : boolean
+    public lastSeen?    : number
+    public ttl?         : number
 
     public probe        : boolean = true
 

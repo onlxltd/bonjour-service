@@ -139,6 +139,10 @@ Stop looking for matching services.
 
 Broadcast the query again.
 
+#### `browser.expire()`
+
+Check any services for an expired TTL and emit stop events.
+
 ### Service
 
 #### `Event: up`

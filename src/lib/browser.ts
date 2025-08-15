@@ -95,17 +95,21 @@ export class Browser extends EventEmitter {
                 })
             }
 
+            const receiveTime = Date.now()
+
             Object.keys(nameMap).forEach(function (name) {
                 // unregister all services shutting down
                 self.goodbyes(name, packet).forEach(self.removeService.bind(self))
 
                 // register all new services
-                var matches = self.buildServicesFor(name, packet, self.txt, rinfo)
+                var matches = self.buildServicesFor(name, packet, self.txt, rinfo, receiveTime)
                 if (matches.length === 0) return
 
                 matches.forEach((service: Service) => {
-                    if (self.serviceMap[service.fqdn]) {
-                        self.updateService(service)
+                    const existingService = self._services.find((s) => dnsEqual(s.fqdn, service.fqdn))
+                    if (existingService) {
+                        existingService.lastSeen = service.lastSeen
+                        self.updateService(existingService, service)
                         return
                     }
                     self.addService(service)
@@ -128,6 +132,20 @@ export class Browser extends EventEmitter {
         this.mdns.query(this.name, 'PTR')
     }
 
+    public expire() {
+        const currentTime = Date.now()
+
+        this._services = this._services.filter((service) => {
+            if(!service.ttl || service.lastSeen === undefined) return true // No expiry
+            const expireTime = service.lastSeen + service.ttl * 1000
+            if(expireTime < currentTime) {
+                this.emit('down', service)
+                return false
+            }
+            return true
+        })
+    }
+
     public get services() {
         return this._services;
     }
@@ -140,9 +158,9 @@ export class Browser extends EventEmitter {
         this.emit('up', service)
     }
 
-    private updateService(service: Service) {
+    private updateService(existingService:Service, service: Service) {
         // check if txt updated
-        if (equalTxt(service.txt, this._services.find((s) => dnsEqual(s.fqdn, service.fqdn))?.txt || {})) return
+        if (equalTxt(service.txt, existingService.txt || {})) return
         // if the new service is not allowed by the txt query, remove it
         if(!filterService(service, this.txtQuery)) {
             this.removeService(service.fqdn)
@@ -194,7 +212,7 @@ export class Browser extends EventEmitter {
     // https://tools.ietf.org/html/rfc6763#section-7.1
     //  Selective Instance Enumeration (Subtypes)
     //
-    private buildServicesFor(name: string, packet: any, txt: KeyValue, referer: any) {
+    private buildServicesFor(name: string, packet: any, txt: KeyValue, referer: any, receiveTime: number) {
         var records = packet.answers.concat(packet.additionals).filter( (rr: ServiceRecord) => rr.ttl > 0) // ignore goodbye messages
 
         return records
@@ -202,7 +220,9 @@ export class Browser extends EventEmitter {
           .map((ptr: ServiceRecord) => {
             const service: KeyValue = {
               addresses: [],
-              subtypes: []
+              subtypes: [],
+              ttl: ptr.ttl,
+              lastSeen: receiveTime
             }
 
             records.filter((rr: ServiceRecord) => {
