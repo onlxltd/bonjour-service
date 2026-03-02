@@ -22,6 +22,7 @@ export interface ServiceConfig {
 
     probe?      : boolean
     disableIPv6?: boolean
+    addresses?  : Array<string>
 }
 
 export interface ServiceRecord {
@@ -36,6 +37,30 @@ export interface ServiceReferer {
     family  : 'IPv4' | 'IPv6'
     port    : number
     size    : number
+}
+
+function checkAddresses(addresses?: Array<string>) : Array<string> | undefined{
+    if (addresses === undefined) {
+        return addresses
+    }
+    if (addresses.length == 0) {
+        throw new Error('ServiceConfig addresses must not be empty if provided')
+    }
+    const all : Set<string>  = new Set<string>()
+    const ifaces  : Array<any> = Object.values(os.networkInterfaces())
+    for(const iface of ifaces) {
+        const addrs: Array<os.NetworkInterfaceInfo> = iface
+        for (let addr of addrs) {
+            if (addr.internal || addr.mac === '00:00:00:00:00:00') continue
+            all.add(addr.address)
+        }
+    }
+    for(const addr of addresses) {
+        if (!all.has(addr)) {
+            throw new Error('ServiceConfig address `' +addr + '` not found on any network interface')
+        }
+    }
+    return addresses;
 }
 
 export class Service extends EventEmitter {
@@ -56,11 +81,12 @@ export class Service extends EventEmitter {
 
     public probe        : boolean = true
 
-    public published   : boolean = false
-    public activated   : boolean = false
+    public published    : boolean = false
+    public activated    : boolean = false
     public destroyed    : boolean = false
 
     private txtService  : DnsTxt
+    private readonly addressesToPublish?   : Array<string>
 
     constructor(config: ServiceConfig, public start: CallableFunction, public stop: CallableFunction) {
         super()
@@ -71,40 +97,52 @@ export class Service extends EventEmitter {
         if (!config.type) throw new Error('ServiceConfig requires `type` property to be set');
         if (!config.port) throw new Error('ServiceConfig requires `port` property to be set');
 
-        this.name           = config.name.split('.').join('-')
-        this.protocol       = config.protocol || 'tcp'
-        this.type           = ServiceToString({ name: config.type, protocol: this.protocol })
-        this.port           = config.port
-        this.host           = config.host || os.hostname()
-        this.fqdn           = `${this.name}.${this.type}${TLD}`
-        this.txt            = config.txt
-        this.subtypes       = config.subtypes
-        this.disableIPv6    = !!config.disableIPv6
+        this.name               = config.name.split('.').join('-')
+        this.protocol           = config.protocol || 'tcp'
+        this.type               = ServiceToString({ name: config.type, protocol: this.protocol })
+        this.port               = config.port
+        this.host               = config.host || os.hostname()
+        this.fqdn               = `${this.name}.${this.type}${TLD}`
+        this.txt                = config.txt
+        this.subtypes           = config.subtypes
+        this.disableIPv6        = !!config.disableIPv6
+        this.addressesToPublish = checkAddresses(config.addresses)
     }
 
 
     public records(): Array<ServiceRecord> {
-        var records : Array<ServiceRecord>  = [this.RecordPTR(this), this.RecordSRV(this), this.RecordTXT(this)]
+        const records : Array<ServiceRecord>  = [this.RecordPTR(this), this.RecordSRV(this), this.RecordTXT(this)]
 
         // Handle subtypes
         for (let subtype of this.subtypes || []) {
             records.push(this.RecordSubtypePTR(this, subtype));
         }
-
-        // Create record per interface address
-        let ifaces  : Array<any> = Object.values(os.networkInterfaces())
-        for(let iface of ifaces) {
-            let addrs : Array<os.NetworkInterfaceInfo> = iface
-            for(let addr of addrs) {
-                if(addr.internal || addr.mac === '00:00:00:00:00:00') continue
-                switch(addr.family) {
-                    case 'IPv4':
-                        records.push(this.RecordA(this, addr.address))
-                        break
-                    case 'IPv6':
-                        if(this.disableIPv6) break
-                        records.push(this.RecordAAAA(this, addr.address))
-                        break
+        // Handle explicit addresses to publish
+        if (this.addressesToPublish && this.addressesToPublish.length > 0) {
+            for (const addr of this.addressesToPublish) {
+                // poor mans check for IPv4 vs IPv6
+                if (addr.includes('.')) {
+                    records.push(this.RecordA(this, addr))
+                } else {
+                    records.push(this.RecordAAAA(this, addr))
+                }
+            }
+        } else {
+            // Create record per interface address
+            const ifaces  : Array<any> = Object.values(os.networkInterfaces())
+            for(let iface of ifaces) {
+                let addrs : Array<os.NetworkInterfaceInfo> = iface
+                for(let addr of addrs) {
+                    if(addr.internal || addr.mac === '00:00:00:00:00:00') continue
+                    switch(addr.family) {
+                        case 'IPv4':
+                            records.push(this.RecordA(this, addr.address))
+                            break
+                        case 'IPv6':
+                            if(this.disableIPv6) break
+                            records.push(this.RecordAAAA(this, addr.address))
+                            break
+                    }
                 }
             }
         }
