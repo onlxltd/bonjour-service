@@ -73,6 +73,7 @@ Options are:
 - `txt` (object, optional) - a key/value object to broadcast as the TXT
   record
 - `disableIPv6` (boolean, optional) disble IPv6 addresses
+- `addresses` (array of strings, optional) addresses to publish,
 
 IANA maintains a [list of official service types and port
 numbers](http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml).

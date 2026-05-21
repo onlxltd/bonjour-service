@@ -17,6 +17,19 @@ const getAddressesRecords = function (host) {
   return records
 }
 
+const getAddresses = function () {
+  const records = []
+  const itrs = Object.values(os.networkInterfaces())
+  for (const addrs of itrs) {
+    for (const { internal, address, family, mac } of addrs) {
+      if (internal === false && mac !== '00:00:00:00:00:00') {
+        records.push({ address, family })
+      }
+    }
+  }
+  return records
+}
+
 const start = () => {}
 const stop = () => {}
 
@@ -38,6 +51,20 @@ test('no port', function (t) {
   t.throws(function () {
     new Service({ name: 'Foo Bar', type: 'http' }, start, stop) // eslint-disable-line no-new
   }, 'Required port not given')
+  t.end()
+})
+
+test('empty addresses', function (t) {
+  t.throws(function () {
+    // new Service({ name: 'Foo Bar', type: 'http', protocol: 'tcp', port: 3000, addresses: [] }, start, stop)
+  }, 'Addresses must not be empty')
+  t.end()
+})
+
+test('non existing address', function (t) {
+  t.throws(function () {
+    // new Service({ name: 'Foo Bar', type: 'http', protocol: 'tcp', port: 3000, addresses: ['0.0.0.0'] }, start, stop)
+  }, 'Required the address to exist')
   t.end()
 })
 
@@ -102,5 +129,17 @@ test('_records() - everything', function (t) {
     { data: s.fqdn, name: '_foo._sub._http._tcp.local', ttl: 28800, type: 'PTR' },
     { data: s.fqdn, name: '_bar._sub._http._tcp.local', ttl: 28800, type: 'PTR' }
   ].concat(getAddressesRecords(s.host)))
+  t.end()
+})
+
+test('_records() - addresses one v4', function (t) {
+  const firstV4 = getAddresses().find(function (addr) { return addr.family === 'IPv4' })?.address
+  const s = new Service({ name: 'Foo Bar', type: 'http', protocol: 'tcp', port: 3000, addresses: [firstV4] }, start, stop)
+  t.deepEqual(s.records(), [
+    { data: s.fqdn, name: '_http._tcp.local', ttl: 28800, type: 'PTR' },
+    { data: { port: 3000, target: os.hostname() }, name: s.fqdn, ttl: 120, type: 'SRV' },
+    { data: [], name: s.fqdn, ttl: 4500, type: 'TXT' },
+    { data: firstV4, name: os.hostname(), ttl: 120, type: 'A' }
+  ])
   t.end()
 })
