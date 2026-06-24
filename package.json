@@ -56,5 +56,5 @@
     "url": "https://github.com/onlxltd/bonjour-service/issues"
   },
   "homepage": "https://github.com/onlxltd/bonjour-service",
-  "packageManager": "yarn@4.15.0"
+  "packageManager": "yarn@4.17.0"
 }
