@@ -1,17 +1,17 @@
-import BonjourService, { Service as ServiceClass, Browser as BrowserClass }                                                     from './lib/bonjour'
-import type { ServiceReferer as ServiceRefererType, ServiceConfig as ServiceConfigType, BrowserConfig as BrowserConfigType }    from './lib/bonjour'
+import BonjourService from './lib/bonjour'
+import * as imported from './lib/bonjour'
 
 class Bonjour extends BonjourService {}
 
-const BonjourConstructor = Bonjour
+import BonjourClass = Bonjour
 
 namespace Bonjour {
-    export const Bonjour = BonjourConstructor
-    export const Service = ServiceClass
-    export const Browser = BrowserClass
-    export type ServiceReferer = ServiceRefererType
-    export type ServiceConfig = ServiceConfigType
-    export type BrowserConfig = BrowserConfigType
+    export import Bonjour = BonjourClass
+    export import Service = imported.Service
+    export import Browser = imported.Browser
+    export import ServiceReferer = imported.ServiceReferer
+    export import ServiceConfig = imported.ServiceConfig
+    export import BrowserConfig = imported.BrowserConfig
 }
 
 Object.defineProperty(Bonjour, 'default', {
@@ -20,8 +20,8 @@ Object.defineProperty(Bonjour, 'default', {
 })
 
 module.exports.Bonjour = Bonjour
-module.exports.Service = ServiceClass
-module.exports.Browser = BrowserClass
+module.exports.Service = imported.Service
+module.exports.Browser = imported.Browser
 module.exports.default = Bonjour
 
 export = Bonjour
