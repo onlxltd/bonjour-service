@@ -1,5 +1,3 @@
-'use strict'
-
 import KeyValue         from './KeyValue'
 
 export class DnsTxt {
