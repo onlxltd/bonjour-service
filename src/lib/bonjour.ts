@@ -8,6 +8,7 @@ export default class Bonjour {
 
     private server      : Server
     private registry    : Registry
+    private findOneTimers: Set<NodeJS.Timeout> = new Set()
 
     /**
      * Setup bonjour service with optional config
@@ -56,16 +57,19 @@ export default class Bonjour {
      */
     public findOne(opts: BrowserConfig | null = null, timeout = 10000, callback?: CallableFunction): Browser {
         const browser: Browser = new Browser(this.server.mdns, opts)
-        var timer: NodeJS.Timeout
+        let timer: NodeJS.Timeout
         browser.once('up', (service: Service) => {
-            if(timer !== undefined) clearTimeout(timer)
+            this.findOneTimers.delete(timer)
+            clearTimeout(timer)
             browser.stop()
             if(callback) callback(service)
         })
         timer = setTimeout(() => {
+            this.findOneTimers.delete(timer)
             browser.stop()
             if(callback) callback(null)
         }, timeout)
+        this.findOneTimers.add(timer)
         return browser
     }
 
@@ -74,6 +78,8 @@ export default class Bonjour {
      * @param callback Callback when underlying socket is closed
      */
     public destroy(callback?: CallableFunction) {
+        this.findOneTimers.forEach(timer => clearTimeout(timer))
+        this.findOneTimers.clear()
         this.registry.destroy()
         this.server.mdns.destroy(callback)
     }
