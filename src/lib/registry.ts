@@ -10,6 +10,7 @@ export class Registry {
 
     private server      : Server
     private services    : Array<Service> = []
+    private reannounceTimers : Map<Service, NodeJS.Timeout> = new Map()
 
     constructor(server: Server) {
         this.server = server
@@ -65,6 +66,8 @@ export class Registry {
 
     public destroy() {
         this.services.map(service => service.destroyed = true)
+        this.reannounceTimers.forEach(timer => clearTimeout(timer))
+        this.reannounceTimers.clear()
     }
 
     /**
@@ -131,6 +134,7 @@ export class Registry {
     private announce (server: Server, service: Service) {
         var delay = 1000
         var packet: Array<ServiceRecord> = service.records()
+        const registry = this
     
         // Register the records
         server.register(packet)
@@ -148,7 +152,11 @@ export class Registry {
                 }
                 delay = delay * REANNOUNCE_FACTOR
                 if (delay < REANNOUNCE_MAX_MS && !service.destroyed) {
-                    setTimeout(broadcast, delay).unref()
+                    const timer = setTimeout(broadcast, delay)
+                    timer.unref()
+                    registry.reannounceTimers.set(service, timer)
+                } else {
+                    registry.reannounceTimers.delete(service)
                 }
             })
         }
@@ -166,7 +174,15 @@ export class Registry {
         if (!Array.isArray(services)) services = [services]
     
         services = services.filter((service: Service) =>  service.activated) // ignore services not currently starting or started
-    
+
+        services.forEach((service: Service) => {
+            const timer = this.reannounceTimers.get(service)
+            if (timer !== undefined) {
+                clearTimeout(timer)
+                this.reannounceTimers.delete(service)
+            }
+        })
+
         var records: any = services.flatMap(function (service) {
             service.activated = false
             var records = service.records()

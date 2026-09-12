@@ -56,6 +56,34 @@ test('bonjour.publish', function (bonjour, t) {
   })
 })
 
+test('bonjour.publish - destroy clears the reannounce timer', function (bonjour, t) {
+  const service = bonjour.publish({ name: 'foo', type: 'bar', port: 3000 })
+  service.on('up', function () {
+    // the reannounce timer is scheduled right after the 'up' event is
+    // emitted, so give that a tick to happen before checking for it
+    setImmediate(function () {
+      t.equal(bonjour.registry.reannounceTimers.has(service), true)
+      bonjour.destroy()
+      t.equal(bonjour.registry.reannounceTimers.size, 0)
+      t.end()
+    })
+  })
+})
+
+test('bonjour.unpublishAll - clears the reannounce timer for the unpublished service', function (bonjour, t) {
+  const service = bonjour.publish({ name: 'foo', type: 'bar', port: 3000 })
+  service.on('up', function () {
+    setImmediate(function () {
+      t.equal(bonjour.registry.reannounceTimers.has(service), true)
+      bonjour.unpublishAll(function () {
+        t.equal(bonjour.registry.reannounceTimers.has(service), false)
+        bonjour.destroy()
+        t.end()
+      })
+    })
+  })
+})
+
 test('bonjour.unpublishAll', function (bonjour, t) {
   t.test('published services', function (t) {
     const service = bonjour.publish({ name: 'foo', type: 'bar', port: 3000 })
